@@ -1,4 +1,4 @@
-ds_proj
+ds_project
 ==============================
 
 Just project to do
