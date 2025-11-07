@@ -53,5 +53,40 @@ Project Organization
 
 
 --------
+## Installation and Environment Setup
+------------
 
-<p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
+### Option 1 — Manual setup (via `venv`)
+
+1. **Clone the repository**
+    ```bash
+    git clone https://github.com/Neutrinno/ds_project.git
+    cd ds_project
+    ```
+
+2. **Create and activate virtual environment**
+    ```bash
+    python3 -m venv .venv
+    source .venv/bin/activate   # for Linux/Mac
+    .venv\Scripts\activate      # for Windows
+    ```
+
+3. **Install dependencies and project**
+    ```bash
+    pip install --upgrade pip
+    pip install -r requirements.txt
+    pip install -e .
+    ```
+
+4. **Install pre-commit hooks**
+    ```bash
+    pre-commit install
+    ```
+
+---
+
+### Option 2 — Using `Makefile`
+
+```bash
+make setup       # creates .venv, installs dependencies and pre-commit
+source .venv/bin/activate

@@ -1,4 +1,4 @@
-.PHONY: clean data lint requirements sync_data_to_s3 sync_data_from_s3
+.PHONY: clean data lint requirements sync_data_to_s3 sync_data_from_s3 setup freeze
 
 #################################################################################
 # GLOBALS                                                                       #
@@ -26,7 +26,8 @@ requirements: test_environment
 	$(PYTHON_INTERPRETER) -m pip install -r requirements.txt
 
 ## Make Dataset
-data: requirements
+data: setup
+	. .venv/bin/activate && \
 	$(PYTHON_INTERPRETER) src/data/make_dataset.py data/raw data/processed
 
 ## Delete all compiled Python files
@@ -36,7 +37,11 @@ clean:
 
 ## Lint using flake8
 lint:
-	flake8 src
+	. .venv/bin/activate && flake8 src
+
+## Save current environment dependencies
+freeze:
+	. .venv/bin/activate && pip freeze > requirements.txt
 
 ## Upload Data to S3
 sync_data_to_s3:
@@ -57,13 +62,13 @@ endif
 ## Set up python interpreter environment
 create_environment:
 ifeq (True,$(HAS_CONDA))
-		@echo ">>> Detected conda, creating conda environment."
+	@echo ">>> Detected conda, creating conda environment."
 ifeq (3,$(findstring 3,$(PYTHON_INTERPRETER)))
 	conda create --name $(PROJECT_NAME) python=3
 else
 	conda create --name $(PROJECT_NAME) python=2.7
 endif
-		@echo ">>> New conda env created. Activate with:\nsource activate $(PROJECT_NAME)"
+	@echo ">>> New conda env created. Activate with:\nsource activate $(PROJECT_NAME)"
 else
 	$(PYTHON_INTERPRETER) -m pip install -q virtualenv virtualenvwrapper
 	@echo ">>> Installing virtualenvwrapper if not already installed.\nMake sure the following lines are in shell startup file\n\
@@ -77,10 +82,17 @@ test_environment:
 	$(PYTHON_INTERPRETER) test_environment.py
 
 #################################################################################
-# PROJECT RULES                                                                 #
+# Setup virtual environment, install dependencies, pre-commit
 #################################################################################
 
-
+setup:
+	python3 -m venv .venv
+	. .venv/bin/activate && \
+	pip install --upgrade pip && \
+	pip install -r requirements.txt && \
+	pip install -e . && \
+	pre-commit install
+	@echo "✅ Environment setup complete. Activate it with:\nsource .venv/bin/activate"
 
 #################################################################################
 # Self Documenting Commands                                                     #
@@ -88,21 +100,6 @@ test_environment:
 
 .DEFAULT_GOAL := help
 
-# Inspired by <http://marmelab.com/blog/2016/02/29/auto-documented-makefile.html>
-# sed script explained:
-# /^##/:
-# 	* save line in hold space
-# 	* purge line
-# 	* Loop:
-# 		* append newline + line to hold space
-# 		* go to next line
-# 		* if line starts with doc comment, strip comment character off and loop
-# 	* remove target prerequisites
-# 	* append hold space (+ newline) to line
-# 	* replace newline plus comments by `---`
-# 	* print line
-# Separate expressions are necessary because labels cannot be delimited by
-# semicolon; see <http://stackoverflow.com/a/11799865/1968>
 .PHONY: help
 help:
 	@echo "$$(tput bold)Available rules:$$(tput sgr0)"
