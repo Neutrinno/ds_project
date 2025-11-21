@@ -1,4 +1,4 @@
-.PHONY: clean data lint requirements sync_data_to_s3 sync_data_from_s3 setup freeze
+.PHONY: clean data data-s3 lint requirements sync_data_to_s3 sync_data_from_s3 setup freeze
 
 #################################################################################
 # GLOBALS                                                                       #
@@ -29,6 +29,11 @@ requirements: test_environment
 data: setup
 	. .venv/bin/activate && \
 	$(PYTHON_INTERPRETER) src/data/make_dataset.py data/raw data/processed
+
+## Run S3 data pipeline
+data-s3:
+	. .venv/bin/activate && \
+	$(PYTHON_INTERPRETER) -m src.data.make_dataset data/raw/iris.zip data/processed/iris_processed.csv
 
 ## Delete all compiled Python files
 clean:
