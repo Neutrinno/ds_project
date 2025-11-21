@@ -90,3 +90,20 @@ Project Organization
 ```bash
 make setup       # creates .venv, installs dependencies and pre-commit
 source .venv/bin/activate
+```
+
+---
+
+## S3 Setup and Usage
+
+1. **Start MinIO container**
+   ```bash
+   docker-compose up -d
+   ```
+
+2. **Upload raw dataset to S3** (using MinIO console at http://localhost:9001 or boto3)
+
+3. **Run data processing pipeline**
+   ```bash
+   python -m src.data.make_dataset data/raw/iris.zip data/processed/iris_processed.csv
+   ```
