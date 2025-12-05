@@ -48,6 +48,25 @@ lint:
 freeze:
 	. .venv/bin/activate && pip freeze > requirements.txt
 
+## Train single model
+train:
+	. .venv/bin/activate && \
+	$(PYTHON_INTERPRETER) -m src.models.train_model configs/hyperparameters.yaml data/processed/iris_processed.csv
+
+## Run grid search experiments
+experiments:
+	. .venv/bin/activate && \
+	$(PYTHON_INTERPRETER) scripts/run_experiments.py configs/hyperparameters_grid.yaml data/processed/iris_processed.csv
+
+## Run grid search in separate Docker containers (+5 bonus)
+experiments-docker:
+	. .venv/bin/activate && \
+	$(PYTHON_INTERPRETER) scripts/run_experiments.py configs/hyperparameters_grid.yaml data/processed/iris_processed.csv --docker
+
+## Train in Docker container
+train-docker:
+	docker-compose --profile train up --build train
+
 ## Upload Data to S3
 sync_data_to_s3:
 ifeq (default,$(PROFILE))

@@ -38,3 +38,15 @@ def upload_file_to_s3(
     """Загружает локальный файл в S3"""
     s3_client.upload_file(str(local_path), bucket, key)
     print(f"Uploaded {local_path} to bucket {bucket} as {key}")
+
+
+def upload_model_to_s3(
+    s3_client: Any,
+    bucket: str,
+    local_model_path: Path,
+    experiment_name: str,
+    model_filename: str = "model.pkl",
+) -> None:
+    """Загружает модель в S3 в папку с названием эксперимента"""
+    s3_key = f"{experiment_name}/{model_filename}"
+    upload_file_to_s3(s3_client, bucket, local_model_path, s3_key)
