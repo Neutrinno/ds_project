@@ -107,19 +107,24 @@ This script will automatically start Docker containers, create virtual environme
 
 ## S3 and MLFlow Setup
 
-1. **Start MinIO and MLFlow containers**
+1. **Create required directories for MLFlow**
+   ```bash
+   mkdir -p mlruns mlflow_artifacts
+   ```
+
+2. **Start MinIO and MLFlow containers**
    ```bash
    docker-compose up -d
    ```
 
-2. **Access services:**
+3. **Access services:**
    - MinIO Console: http://localhost:9001 (login: minioadmin/minioadmin)
    - MinIO API: http://localhost:9000
    - MLFlow UI: http://localhost:5000
 
-3. **Upload raw dataset to S3** (using MinIO console at http://localhost:9001 or boto3)
+4. **Upload raw dataset to S3** (using MinIO console at http://localhost:9001 or boto3)
 
-4. **Run data processing pipeline**
+5. **Run data processing pipeline**
    ```bash
    python -m src.data.make_dataset data/raw/iris.zip data/processed/iris_processed.csv
    ```
@@ -284,4 +289,9 @@ make experiments
 
 # 5. View results in MLFlow UI
 # Open http://localhost:5000 in browser
+```
+
+**Note:** If you start containers manually with `docker-compose up -d`, make sure to create MLFlow directories first:
+```bash
+mkdir -p mlruns mlflow_artifacts
 ```
