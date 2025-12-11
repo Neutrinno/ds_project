@@ -117,7 +117,10 @@ This script will automatically start Docker containers, create virtual environme
    - MinIO API: http://localhost:9000
    - MLFlow UI: http://localhost:5000
 
-3. **Upload raw dataset to S3** (using MinIO console at http://localhost:9001 or boto3)
+3. **Upload raw dataset to S3:**
+   - Open MinIO Console: http://localhost:9001
+   - Create bucket `iris-datasets` (if it doesn't exist)
+   - Upload file `iris.zip` to the bucket with key `iris.zip`
 
 4. **Run data processing pipeline**
    ```bash

@@ -124,9 +124,8 @@ def train_model(
 
         logger.info(f"Model saved to {model_path}")
 
-        # Логирование модели в MLFlow (с обработкой ошибок)
         try:
-            mlflow.sklearn.log_model(model, "model")
+            mlflow.sklearn.log_model(model, name="model")
             logger.info("Model logged to MLFlow")
         except Exception as e:
             logger.warning(f"Failed to log model to MLFlow: {e}")
