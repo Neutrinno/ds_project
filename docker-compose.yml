@@ -56,6 +56,7 @@ services:
       - ./configs:/app/configs
     environment:
       - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - GIT_PYTHON_REFRESH=quiet
     depends_on:
       - minio
       - mlflow

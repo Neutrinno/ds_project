@@ -142,6 +142,19 @@ def train_model(
 
         logger.info(f"Model uploaded to S3: {experiment_name}/model.pkl")
 
+        # Получаем информацию о run для формирования правильных ссылок
+        run = mlflow.active_run()
+        if run:
+            run_id = run.info.run_id
+            experiment_id = run.info.experiment_id
+            # Формируем ссылки с localhost для доступа из браузера
+            tracking_uri = mlflow_tracking_uri.replace("mlflow", "localhost")
+            run_url = f"{tracking_uri}/#/experiments/{experiment_id}/runs/{run_id}"
+            experiment_url = f"{tracking_uri}/#/experiments/{experiment_id}"
+            run_name = getattr(run.info, "run_name", run_id)
+            print(f"🏃 View run {run_name} at: {run_url}")
+            print(f"🧪 View experiment at: {experiment_url}")
+
 
 @click.command()
 @click.argument("config_path", type=click.Path(exists=True))

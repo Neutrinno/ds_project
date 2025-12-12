@@ -117,6 +117,7 @@ def run_experiments(
                     "docker", "run", "--rm",
                     "-v", f"{Path.cwd()}:/workspace",
                     "-w", "/workspace",
+                    "-e", "GIT_PYTHON_REFRESH=quiet",
                 ]
 
                 # Путь к конфигу относительно рабочей директории в контейнере
