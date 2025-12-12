@@ -26,12 +26,14 @@ services:
       - ./mlruns:/mlruns
       - ./mlflow_artifacts:/mlflow_artifacts
     working_dir: /app
+    environment:
+      - MLFLOW_TRACKING_SERVER_ALLOWED_HOSTS=*
     command: >
       sh -c "
         pip install --default-timeout=100 --no-cache-dir mlflow &&
         mkdir -p /mlruns /mlflow_artifacts &&
         chmod 777 /mlruns /mlflow_artifacts &&
-        mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri sqlite:////mlruns/mlflow.db --default-artifact-root /mlflow_artifacts
+        mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri sqlite:////mlruns/mlflow.db --default-artifact-root /mlflow_artifacts --allowed-hosts '*'
       "
 
   train:
@@ -39,13 +41,21 @@ services:
       context: .
       dockerfile: Dockerfile.train
     container_name: train
+    command: >
+      python -m src.models.train_model
+        configs/hyperparameters.yaml
+        data/processed/iris_processed.csv
+        --mlflow-uri http://mlflow:5000
+        --bucket iris-datasets
+        --endpoint http://minio:9000
+        --access-key minioadmin
+        --secret-key minioadmin
     volumes:
       - ./data:/app/data
       - ./models:/app/models
       - ./configs:/app/configs
     environment:
       - MLFLOW_TRACKING_URI=http://mlflow:5000
-    network_mode: "service:mlflow"
     depends_on:
       - minio
       - mlflow

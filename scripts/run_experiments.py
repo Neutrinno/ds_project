@@ -74,20 +74,67 @@ def run_experiments(
                 tmp_config_path = tmp_config.name
 
             try:
+                project_name = Path.cwd().name.lower().replace("-", "_")
+                network_name = f"{project_name}_default"
+
+                check_network = subprocess.run(
+                    ["docker", "network", "inspect", network_name],
+                    capture_output=True,
+                    text=True,
+                    check=False
+                )
+
+                if check_network.returncode != 0:
+                    inspect_mlflow = subprocess.run(
+                        [
+                            "docker",
+                            "inspect",
+                            "--format",
+                            "{{range .NetworkSettings.Networks}}{{.NetworkID}}{{end}}",
+                            "mlflow"
+                        ],
+                        capture_output=True,
+                        text=True,
+                        check=False
+                    )
+                    if inspect_mlflow.returncode == 0 and inspect_mlflow.stdout.strip():
+                        network_id = inspect_mlflow.stdout.strip()
+                        get_network_name = subprocess.run(
+                            ["docker", "network", "inspect", "--format", "{{.Name}}", network_id],
+                            capture_output=True,
+                            text=True,
+                            check=False
+                        )
+                        if get_network_name.returncode == 0:
+                            network_name = get_network_name.stdout.strip()
+                            check_network.returncode = 0
+
                 cmd = [
                     "docker", "run", "--rm",
                     "-v", f"{Path.cwd()}:/workspace",
                     "-w", "/workspace",
+                ]
+
+                if check_network.returncode == 0:
+                    cmd.extend(["--network", network_name])
+                    mlflow_uri_docker = mlflow_uri
+                    endpoint_docker = endpoint
+                else:
+                    cmd.append("--network=host")
+                    mlflow_uri_docker = mlflow_uri.replace("mlflow", "localhost")
+                    endpoint_docker = endpoint.replace("minio", "localhost")
+
+                cmd.extend([
                     "ds-train:latest",
                     "python", "-m", "src.models.train_model",
                     tmp_config_path,
                     str(dataset_path),
-                    "--mlflow-uri", mlflow_uri,
+                    "--mlflow-uri", mlflow_uri_docker,
                     "--bucket", bucket,
-                    "--endpoint", endpoint,
+                    "--endpoint", endpoint_docker,
                     "--access-key", access_key,
                     "--secret-key", secret_key,
-                ]
+                ])
 
                 if dataset_s3_key is not None:
                     cmd.extend(["--dataset-s3-key", dataset_s3_key])
