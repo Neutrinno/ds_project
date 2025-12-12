@@ -1,69 +1,59 @@
 #!/bin/bash
-# Скрипт для подготовки окружения для запуска экспериментов
-# Создает виртуальное окружение, устанавливает зависимости,
-# поднимает Docker контейнеры (MinIO и MLFlow)
+# Setup script for project environment
+# Creates virtual environment, installs dependencies, and starts Docker containers (MinIO and MLFlow)
 
-set -e  # Остановка при ошибке
+set -e
 
-echo "🚀 Настройка окружения для проекта..."
+echo "Setting up project environment..."
 
-# Определяем директорию проекта
+# Get project directory
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$PROJECT_DIR"
 
-echo "📁 Рабочая директория: $PROJECT_DIR"
-
-# Создаем виртуальное окружение, если его нет
+# Create virtual environment if it doesn't exist
 if [ ! -d ".venv" ]; then
-    echo "📦 Создание виртуального окружения..."
+    echo "Creating virtual environment..."
     python3 -m venv .venv
 else
-    echo "✅ Виртуальное окружение уже существует"
+    echo "Virtual environment already exists"
 fi
 
-# Активируем виртуальное окружение
-echo "🔌 Активация виртуального окружения..."
+# Activate virtual environment
+echo "Activating virtual environment..."
 source .venv/bin/activate
 
-# Обновляем pip
-echo "⬆️  Обновление pip..."
-pip install --upgrade pip
+# Upgrade pip
+echo "Upgrading pip..."
+pip install --upgrade pip --quiet
 
-# Устанавливаем зависимости
-echo "📚 Установка зависимостей..."
-pip install -r requirements.txt
+# Install dependencies
+echo "Installing dependencies..."
+pip install -r requirements.txt --quiet
 
-# Устанавливаем проект в режиме разработки
-echo "🔧 Установка проекта в режиме разработки..."
-pip install -e .
+# Install project in editable mode
+echo "Installing project in editable mode..."
+pip install -e . --quiet
 
-# Устанавливаем pre-commit хуки
+# Install pre-commit hooks
 if command -v pre-commit &> /dev/null; then
-    echo "🪝 Установка pre-commit хуков..."
+    echo "Installing pre-commit hooks..."
     pre-commit install
 else
-    echo "⚠️  pre-commit не найден, пропускаем установку хуков"
+    echo "Warning: pre-commit not found, skipping hook installation"
 fi
 
-# Поднимаем Docker контейнеры (MinIO и MLFlow)
-echo "🐳 Запуск Docker контейнеров (MinIO и MLFlow)..."
+# Start Docker containers (MinIO and MLFlow)
+echo "Starting Docker containers (MinIO and MLFlow)..."
 docker-compose up -d
 
-# Ждем, пока контейнеры запустятся
-echo "⏳ Ожидание запуска контейнеров..."
+# Wait for containers to start
+echo "Waiting for containers to start..."
 sleep 5
 
-# Проверяем статус контейнеров
-echo "🔍 Проверка статуса контейнеров..."
+# Check container status
+echo "Checking container status..."
 docker-compose ps
 
 echo ""
-echo "✅ Окружение настроено!"
-echo ""
-echo "📝 Следующие шаги:"
-echo "   1. Активируйте виртуальное окружение: source .venv/bin/activate"
-echo "   2. Проверьте контейнеры: docker-compose ps"
-echo "   3. Откройте MLFlow UI: http://localhost:5000"
-echo "   4. Откройте MinIO Console: http://localhost:9001 (minioadmin/minioadmin)"
-echo "   5. Запустите обучение: make train"
-echo "   6. Запустите grid search: make experiments"
+echo "Environment setup complete."
+echo "Activate virtual environment with: source .venv/bin/activate"
