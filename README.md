@@ -117,7 +117,10 @@ This script will automatically start Docker containers, create virtual environme
    - MinIO API: http://localhost:9000
    - MLFlow UI: http://localhost:5000
 
-3. **Upload raw dataset to S3** (using MinIO console at http://localhost:9001 or boto3)
+3. **Upload raw dataset to S3:**
+   - Open MinIO Console: http://localhost:9001
+   - Create bucket `iris-datasets` (if it doesn't exist)
+   - Upload file `iris.zip` to the bucket with key `iris.zip`
 
 4. **Run data processing pipeline**
    ```bash
@@ -163,13 +166,11 @@ This will run 24 experiments with all combinations of:
 
 ### Grid Search in Docker Containers
 
+**Prerequisites:**
+- MinIO and MLFlow containers must be running: `docker-compose up -d`
+- Training image must be built: `docker build -f Dockerfile.train -t ds-train .`
+
 Run each experiment in a separate Docker container:
-
-```bash
-python scripts/run_experiments.py configs/hyperparameters_grid.yaml data/processed/iris_processed.csv --docker
-```
-
-Or use Makefile:
 
 ```bash
 make experiments-docker
@@ -184,6 +185,11 @@ make experiments-docker
 
 ## Training in Docker Container
 
+**Prerequisites:** Ensure MinIO and MLFlow containers are running:
+```bash
+docker-compose up -d
+```
+
 Build and run training in a Docker container:
 
 ```bash
@@ -191,12 +197,6 @@ Build and run training in a Docker container:
 docker build -f Dockerfile.train -t ds-train .
 
 # Run training
-docker-compose --profile train up --build train
-```
-
-Or use Makefile:
-
-```bash
 make train-docker
 ```
 
@@ -268,13 +268,15 @@ docker logs mlflow             # View MLFlow logs
 
 ## Quick Start
 
+### Local Training
+
 ```bash
 # 1. Setup environment
 bash scripts/setup_environment.sh
 source .venv/bin/activate
 
-# 2. Verify containers are running
-docker-compose ps
+# 2. Process dataset
+python -m src.data.make_dataset data/raw/iris.zip data/processed/iris_processed.csv
 
 # 3. Train single model
 make train
@@ -284,4 +286,20 @@ make experiments
 
 # 5. View results in MLFlow UI
 # Open http://localhost:5000 in browser
+```
+
+### Docker Training
+
+```bash
+# 1. Ensure MinIO and MLFlow are running
+docker-compose up -d
+
+# 2. Build training image
+docker build -f Dockerfile.train -t ds-train .
+
+# 3. Train in Docker container
+make train-docker
+
+# 4. Run grid search in Docker containers
+make experiments-docker
 ```
