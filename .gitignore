@@ -101,3 +101,4 @@ Thumbs.db
 tmp/
 temp/
 *.tmp
+configs/tmp/

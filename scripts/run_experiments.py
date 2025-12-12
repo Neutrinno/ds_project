@@ -67,8 +67,12 @@ def run_experiments(
             import tempfile
             import os
 
+            # Создаем временный файл в директории проекта, чтобы он был доступен в контейнере
+            tmp_dir = Path.cwd() / "configs" / "tmp"
+            tmp_dir.mkdir(parents=True, exist_ok=True)
+
             with tempfile.NamedTemporaryFile(
-                mode="w", suffix=".yaml", delete=False
+                mode="w", suffix=".yaml", delete=False, dir=str(tmp_dir)
             ) as tmp_config:
                 yaml.dump(experiment_config, tmp_config)
                 tmp_config_path = tmp_config.name
@@ -115,19 +119,23 @@ def run_experiments(
                     "-w", "/workspace",
                 ]
 
+                # Путь к конфигу относительно рабочей директории в контейнере
+                config_path_in_container = Path(tmp_config_path).relative_to(Path.cwd())
+
                 if check_network.returncode == 0:
                     cmd.extend(["--network", network_name])
-                    mlflow_uri_docker = mlflow_uri
-                    endpoint_docker = endpoint
+                    # Используем имена сервисов docker-compose
+                    mlflow_uri_docker = mlflow_uri.replace("localhost", "mlflow")
+                    endpoint_docker = endpoint.replace("localhost", "minio")
                 else:
                     cmd.append("--network=host")
-                    mlflow_uri_docker = mlflow_uri.replace("mlflow", "localhost")
-                    endpoint_docker = endpoint.replace("minio", "localhost")
+                    mlflow_uri_docker = mlflow_uri
+                    endpoint_docker = endpoint
 
                 cmd.extend([
                     "ds-train:latest",
                     "python", "-m", "src.models.train_model",
-                    tmp_config_path,
+                    str(config_path_in_container),
                     str(dataset_path),
                     "--mlflow-uri", mlflow_uri_docker,
                     "--bucket", bucket,
